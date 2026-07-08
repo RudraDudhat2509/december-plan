@@ -90,11 +90,18 @@ PHASE 4 — OUTREACH + INTERVIEW REPS     Wk 15–21  Oct 12 – Nov 29
 2.5/8 on areas the old calibration called "Strong" (functions, async ≈ 5/10 at trap level).
 Foundations get relearned from first principles with retention machinery, not skipped.
 
-One project threads through everything: **the Lab Rat** — a realistic support agent
-(built Wk 4, modeled on the Altagic use case) that gets instrumented, traced, error-
-analyzed, judged, gated in CI, attacked, and defended. By October it is a complete,
-public case study: *"I built an agent and a full evaluation system around it, here is
-every failure I found and how I measured the fixes."* That artifact is the interview.
+One project threads through everything: **the Attribution Engine** — a multi-agent
+pipeline (Researcher with RAG → Analyst → Writer → Critic, built Wk 5) paired with a
+tool that automatically finds which agent caused a failure when the pipeline breaks —
+the same idea as `git bisect`, applied to agents talking to each other. Competitive
+research (2026-07-05) confirmed this specific angle is genuinely underbuilt: existing
+agent-security tools (DeepTeam, PyRIT, Agent Security Bench) score *whether* an attack
+succeeded, but nothing cleanly attributes *which agent* caused a multi-agent failure —
+recent papers (BlindGuard, trust-propagation studies) confirm this is still open. It
+gets instrumented, traced, benchmarked against synthetic failures with known ground
+truth, judged, gated in CI, and stress-tested by planting an adversarial agent inside
+the pipeline. By October it is a complete, public case study AND a genuinely novel OSS
+tool. That artifact is the interview.
 
 ### PHASE 1 — Relearn the Core (Wk 1–5)
 
@@ -123,20 +130,22 @@ Weekly structure:
 - **Wk 4 — Testing + professional debugging.** pytest, fixtures, parametrize, mocking —
   through the evals lens (assertions ARE Level-1 evals). Scientific debugging method,
   pdb, git bisect. Reps: 2 planted-bug hunts in unfamiliar code (the FDE live-debug format).
-- **Wk 5 — SQL essentials + Docker + build the Lab Rat.** SQL (JOINs, GROUP BY, window
+- **Wk 5 — SQL essentials + Docker + build the pipeline.** SQL (JOINs, GROUP BY, window
   functions — deepened later during error-analysis weeks), Docker fundamentals, then
-  assemble the support agent: FastAPI + 5-step agent loop + Postgres + Redis,
-  containerized, OTel-instrumented from day one. The Phase 1 gate build.
+  assemble the base system: a LangGraph pipeline with 4 distinct agent roles (Researcher
+  with RAG over a small doc set → Analyst → Writer → Critic) doing a real report-writing
+  task, containerized, OTel-instrumented from day one. The Phase 1 gate build.
 
-**Phase 1 gate (Aug 9):** Lab Rat runs in Docker, has tests, emits traces; Rudra explains
-every line cold; retention deck shows ≥90% recall on all Phase 1 cards, each passed twice
-including one ELI5 pass.
+**Phase 1 gate (Aug 9):** the pipeline runs in Docker, has tests, emits traces; Rudra
+explains every line cold; retention deck shows ≥90% recall on all Phase 1 cards, each
+passed twice including one ELI5 pass.
 
 ### PHASE 2 — Evals + Observability Core (Wk 6–11)
 
 The spine. Methodology = Hamel Husain + Shreya Shankar's critique-shadowing process
-(the field's canonical curriculum — 4,500+ engineers trained), executed on the Lab Rat
-with synthetic traffic. Primary sources, all free:
+(the field's canonical curriculum — 4,500+ engineers trained), executed on the pipeline
+with synthetic traffic AND synthetic injected failures (known root-cause agent, for the
+attribution benchmark). Primary sources, all free:
 [Your AI Product Needs Evals](https://hamel.dev/evals) ·
 [LLM-as-a-Judge complete guide](https://hamel.dev/llm-judge/) ·
 [Field Guide to Rapidly Improving AI Products](https://hamel.dev/field-guide) ·
@@ -148,35 +157,47 @@ with synthetic traffic. Primary sources, all free:
 [Arize Recipe-Bot workflow (the Maven course homework, free)](https://arize.com/blog/ai-evals-maven-course-homework-the-recipe-bot-workflow/)
 
 - **Wk 6 — Instrumentation deep.** OTel GenAI semantic conventions, spans/context
-  propagation hands-on, Langfuse AND Arize Phoenix wired to the Lab Rat (knowing both
-  tools = interview currency at both companies). Generate 200+ traces of synthetic
-  user traffic (personas × scenarios × features grid, per Hamel's taxonomy).
-- **Wk 7 — Error analysis.** THE skill, the highest-ROI activity in AI engineering.
-  Open coding on 100+ real traces (free-text notes, no preconceived categories) →
-  axial coding (build the failure taxonomy from the notes) → frequency counting →
-  prioritized fix list. Build the custom data viewer (FastHTML/Streamlit, built in
-  hours — Hamel: "the most important AI investment"). Rudra does the annotation
-  HIMSELF — this cannot be delegated to AI, that's the point.
-- **Wk 8 — LLM-as-judge via critique shadowing.** Binary pass/fail + written critiques
-  (never 1–5 scales). Rudra = principal domain expert. Judge prompt built from his own
-  few-shot critiques. Measure judge↔human agreement properly (precision/recall when
-  classes are imbalanced, not raw agreement). Iterate to >85% alignment. Run his labels
-  through AlignEval as a cross-check.
+  propagation hands-on, Langfuse AND Arize Phoenix wired to the pipeline (knowing both
+  tools = interview currency at both companies). Every agent's span carries which-agent
+  metadata from day one — the attribution tool needs clean per-agent trace boundaries
+  to work at all. Generate 200+ traces of synthetic tasks (topics × difficulty ×
+  failure-injection grid, per Hamel's taxonomy, extended with known-root-cause failures).
+- **Wk 7 — Error analysis + the attribution benchmark.** THE skill, the highest-ROI
+  activity in AI engineering. Open coding on 100+ real traces (free-text notes, no
+  preconceived categories) → axial coding (build the failure taxonomy from the notes) →
+  frequency counting → prioritized fix list. Build the custom data viewer (FastHTML/
+  Streamlit, built in hours — Hamel: "the most important AI investment"). Rudra does the
+  annotation HIMSELF — this cannot be delegated to AI, that's the point. Alongside this:
+  build the 20–30 case attribution benchmark (deliberately corrupt one agent's output per
+  case, record the true culprit) — this is the ground truth the whole project is scored
+  against.
+- **Wk 8 — Two attribution methods, judged like Hamel teaches.** Method 1 (deterministic,
+  core): ablation — re-run the pipeline swapping one agent's output at a time back to a
+  known-good version; whichever swap fixes the outcome names the culprit. Method 2
+  (comparison baseline): an LLM-as-judge that reads the full trace and names a culprit
+  with a written critique — built via critique shadowing exactly as taught: binary
+  pass/fail, Rudra as principal domain expert, few-shot critiques, judge↔human agreement
+  via precision/recall (not raw agreement). Score both methods against the Wk 7 benchmark
+  — % correct culprit identification is the headline metric, exactly like Mimic's
+  agreement-with-LLM number.
 - **Wk 9 — Eval infrastructure.** Golden datasets with versioning, Level-1 assertion
-  gates in CI (GitHub Actions), the dataset-harvesting flywheel (prod failures → eval
-  set), regression gates on prompt changes. Connect diffprompt's behavioral-divergence
-  idea as the early-warning layer alongside the quality gate.
+  gates in CI (GitHub Actions) — now gating on BOTH quality regression and attribution-
+  accuracy regression — the dataset-harvesting flywheel (prod failures → eval set),
+  regression gates on prompt changes. Connect diffprompt's behavioral-divergence idea as
+  the early-warning layer alongside the quality gate.
 - **Wk 10 — Online evals + RAG evals.** Background scoring, rolling alerts, cost/latency
   tracking. RAGAS internals (faithfulness, context precision/recall) — implement two
-  metrics from scratch before using the library, so it's never magic.
+  metrics from scratch before using the library, so it's never magic, then apply them to
+  the Researcher agent's retrieval step directly (not a toy example — it's already in
+  the pipeline).
 - **Wk 11 — Consolidation buffer.** Life happens; at 10–15 hrs/wk a buffer is load-bearing.
   If on schedule: write case-study part 1 and start scouting OSS issues in
   Phoenix/Langfuse/OpenLLMetry/RAGAS from real friction hit in Wk 6–10 (the best PR
   source is "this annoyed me while using it").
 
-**Phase 2 gate (Sep 20):** Full eval system live on the Lab Rat — viewer, taxonomy,
-aligned judge with agreement metrics, CI gate, online scoring. Rudra can run the whole
-loop and defend every design decision cold.
+**Phase 2 gate (Sep 20):** Full eval system live on the pipeline — viewer, taxonomy,
+attribution benchmark, both attribution methods scored against it, CI gate, online
+scoring. Rudra can run the whole loop and defend every design decision cold.
 
 ### PHASE 3 — Security Layer + OSS Sprint (Wk 12–14)
 
@@ -185,10 +206,12 @@ security person builds rigorous evals. The fusion — **eval-driven red teaming,
 success rate as a measured metric** — is Rudra's unique positioning, and his garak/Strix
 history already backs it.
 
-- **Wk 12 — Attack the Lab Rat + systematic probing.** Prompt injection (direct +
-  indirect), tool poisoning, memory poisoning, RAG retrieval poisoning — each attack
-  becomes an eval case; attack success rate becomes a tracked metric on the same
-  dashboard. garak-style probe/detector harness; finish the in-flight garak PR
+- **Wk 12 — Plant an adversarial agent + systematic probing.** Prompt injection (direct +
+  indirect), tool poisoning, memory poisoning, RAG retrieval poisoning against the
+  Researcher agent — the sharpest test of the whole project: does the attribution tool
+  correctly name a COMPROMISED agent as the culprit, same as it names a buggy one? Attack
+  success rate becomes a tracked metric on the same dashboard as quality and attribution
+  accuracy. garak-style probe/detector harness; finish the in-flight garak PR
   (#74 tag-injection) if still open.
 - **Wk 13–14 — OSS sprint + publish.** Two targeted PRs in eval/obs repos (Phoenix,
   Langfuse, OpenLLMetry, RAGAS — from the Wk 10 friction list). Publish the flagship
@@ -224,7 +247,7 @@ Prep and pipeline in parallel, ~half time each.
 | Block | Time | What |
 |---|---|---|
 | Deep session ×2 | 5–6 h | Teach → Rudra builds live (Claude never writes the solution) |
-| Project build | 3–5 h | Solo work on the week's Lab Rat milestone |
+| Project build | 3–5 h | Solo work on the week's Attribution Engine milestone |
 | No-AI rep | 1–1.5 h | Timed, cold, editor only. AI review after. |
 | Notes review | 15 min | Claude writes the notes; Rudra reads + flags gaps |
 | Explain-it-cold | 15 min | Verbal, interrogated |
@@ -237,7 +260,7 @@ Phase 4 swaps the deep sessions for mocks/system design.
 
 1. Can rebuild the week's artifact cold, no AI, and explain every line — sampled randomly.
 2. Passes explain-it-cold every week — 5 min verbal, interrogated, no notes open.
-3. Lab Rat milestones on schedule (traces → viewer → judge → CI → attacks).
+3. Attribution Engine milestones on schedule (traces → viewer → benchmark → both attribution methods scored → CI → adversarial-agent test).
 4. By Oct 11: public case study + 2 new OSS PRs + rebuilt resume.
 5. By Nov 15: 30+ outreach touches, ≥5 conversations.
 6. By early Dec: offer(s).
