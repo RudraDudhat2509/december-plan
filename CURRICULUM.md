@@ -74,6 +74,13 @@ enforced every week, no exceptions:
    ELI5 explanation ("explain it to a five-year-old"). Graduated cards still get sampled
    randomly in Phase 4 mocks. Nothing is "done" because it was taught — only because
    it survived the schedule.
+8. **Fair testing only** (added 2026-07-08, after a real violation). A synthesis question
+   combining two ALREADY-FULLY-TAUGHT concepts is fair game — that's the actual skill this
+   plan builds. Demanding precision on a mechanism that was only mentioned in passing while
+   teaching something else is not fair, and Rudra correctly called this out mid-session.
+   Rule: if a question's model answer requires a mechanism that hasn't been taught as its
+   own standalone explanation, teach it properly first, THEN ask. Never let "I gestured at
+   it once" count as "I taught it."
 
 ---
 
@@ -139,6 +146,19 @@ Weekly structure:
 **Phase 1 gate (Aug 9):** the pipeline runs in Docker, has tests, emits traces; Rudra
 explains every line cold; retention deck shows ≥90% recall on all Phase 1 cards, each
 passed twice including one ELI5 pass.
+
+**Progress note (2026-07-08):** Week 1 content taught and tested in full depth in one
+session — reference/box model, mutable vs immutable, LEGB, `nonlocal`/`global`,
+`is`/`==`, def-time vs call-time as the unifying lens. Went further than planned: also
+covered most of Week 2 ahead of schedule — closures, decorator stacking order, decorator
+factories (`@retry(times=3)`), context managers (class-based + `@contextmanager`,
+suppression semantics, nested enter/exit order, log-and-reraise, single-use generator
+gotcha), and generator `.send()`. Tested adversarially, not just taught — see
+`RETENTION_DECK.md` C01–C03, N17–N30. Remaining Week 2 items: generator expressions
+specifically (as syntax, not just generator functions) — not yet covered. **C02
+(decorator execution order) has now failed twice** — flagged in the deck as a real weak
+spot, not a fluke. Session also produced one process correction: rule 8 above, added
+after Rudra caught a fairness violation in how a synthesis question was tested.
 
 ### PHASE 2 — Evals + Observability Core (Wk 6–11)
 
