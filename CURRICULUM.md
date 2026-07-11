@@ -154,11 +154,26 @@ covered most of Week 2 ahead of schedule — closures, decorator stacking order,
 factories (`@retry(times=3)`), context managers (class-based + `@contextmanager`,
 suppression semantics, nested enter/exit order, log-and-reraise, single-use generator
 gotcha), and generator `.send()`. Tested adversarially, not just taught — see
-`RETENTION_DECK.md` C01–C03, N17–N30. Remaining Week 2 items: generator expressions
-specifically (as syntax, not just generator functions) — not yet covered. **C02
-(decorator execution order) has now failed twice** — flagged in the deck as a real weak
-spot, not a fluke. Session also produced one process correction: rule 8 above, added
-after Rudra caught a fairness violation in how a synthesis question was tested.
+`RETENTION_DECK.md` C01–C03, N17–N30. **C02 (decorator execution order) had failed
+twice** — flagged as a real weak spot. Session also produced one process correction:
+rule 8 above, added after Rudra caught a fairness violation in how a synthesis question
+was tested.
+
+**Progress note (2026-07-09):** Retention run on 22 cards (scoped to Week 1/2 material
+only, per Rudra's correction — future-phase cards for concurrency/evals/Redis stay
+parked until those weeks arrive). **C02 passed clean on the third attempt — the weak
+spot is genuinely closed.** C11/C12/C13 hit second consecutive passes (7d interval, one
+ELI5 pass still needed each to graduate). 5 real misses surfaced and got corrected:
+N17 (sticky-note model — said `y=x` copies a value, wrong), N19 (said `nonlocal` could
+fall through to global — false, non-overlapping targets), N23 (biggest miss — confused
+`@contextmanager`'s try/finally with an unrelated decorator example, needed full
+re-teach), N26 (two rounds of imprecision before landing on "exhausted generator,
+runtime error"), N30 (timing confusion on what one `send()` call actually does). All 5
+retry tomorrow (2026-07-10). Closed out Week 2's last item — generator expressions
+(`(x for x in range(n))`) — clean pass first try, correctly connected to the existing
+single-use-generator lesson (N31). **Week 1 AND Week 2 content are now both fully
+taught and tested**, ahead of the original 5-week Phase 1 schedule. Next: Week 3
+(concurrency from first principles) or continue deepening Week 1/2 — Rudra's call.
 
 ### PHASE 2 — Evals + Observability Core (Wk 6–11)
 

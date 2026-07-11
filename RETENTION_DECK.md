@@ -233,6 +233,16 @@ requiring separate additional calls, when they all happen within the single `sen
 
 ---
 
+## Passed cold 2026-07-09 (same session, new card) — first pass, advanced to 3d
+
+**N31** `[3d | 2026-07-12 | 1]`
+Q: `g = (x for x in range(3)); print(list(g)); print(list(g))` — both outputs, and why?
+A: `[0, 1, 2]` then `[]`. Generator expressions ARE generators (just `()` syntax instead
+of a full `def`/`yield` function) — same single-use exhaustion as C07/N26. First `list(g)`
+consumes it fully; second call has nothing left.
+
+---
+
 ## Graduated
 (none yet — C11/C12/C13 are two passes deep but neither pass was ELI5-style; need one
 ELI5-format cold pass each to actually graduate)
