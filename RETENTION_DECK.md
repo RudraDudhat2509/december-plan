@@ -7,88 +7,86 @@ Graduation = two consecutive cold passes, one of them ELI5.
 
 Format per card: `[interval | due date | streak]`
 
+**Scoping rule (added 2026-07-09, Rudra's correction):** only run cards for material
+actually re-taught in the CURRENT pass of the curriculum. Cards from weeks/phases not
+yet reached in the restructured plan (concurrency = Week 3, evals/observability =
+Phase 2, Redis = Week 6) stay parked below, untouched, until we actually get there.
+
 ---
 
-## OVERDUE — never retried, do these FIRST next session
+## PARKED — future-phase content, not yet re-taught, do not test until that week arrives
 
-**C04** `[1d | 2026-07-05 | 0]`
-Q: Decorated function's `__name__` prints what, why, fix?
-A: `wrapper` — the name IS the wrapper after decoration; metadata (name, docstring) is
-wrapper's. Fix: `@functools.wraps(fn)` on the wrapper. Matters for tracebacks, FastAPI
-route names, any introspection.
-
-**C05** `[1d | 2026-07-05 | 0]`
+**C05** `[1d | 2026-07-05 | 0]` (Week 3 — concurrency)
 Q: Two 2s fetches: (a) `await a(); await b()` vs (b) `create_task` both then await both.
 Times?
 A: (a) 4s — bare await starts AND finishes one coroutine before the next exists.
 (b) 2s — create_task starts work immediately; awaits just collect. THE RULE: concurrency
 is decided by WHEN WORK STARTS, not by the word await. gather/create_task start early.
 
-**C06** `[1d | 2026-07-05 | 0]`
+**C06** `[1d | 2026-07-05 | 0]` (Week 3 — concurrency)
 Q: 10 Python threads downloading 10 files (~3s each) — faster than serial despite GIL? Why?
 A: Yes, ~3s total vs 30s. Threads release the GIL during blocking I/O. GIL blocks parallel
 COMPUTING, not parallel WAITING. Threads: useless for CPU, fine for I/O; async scales
 further for thousands of connections.
 
-**C07** `[1d | 2026-07-05 | 0]`
-Q: `g = gen()` yielding 1, 2. `print(sum(g)); print(sum(g))` — output?
-A: 3 then 0. Generators are single-use; once exhausted they're silently empty (no error).
-Classic silent bug: two consumers of one generator — second gets nothing.
-
-**C08** `[1d | 2026-07-05 | 0]`
+**C08** `[1d | 2026-07-05 | 0]` (Phase 2 — evals)
 Q: Judge scores outputs by similarity to one golden `expected` answer; a better differently-
 worded answer scores 0.4. Flaw? Fix?
 A: Reference-based eval on an open-ended task — punishes valid variation. Switch to
 rubric-based judging: binary criteria checks ("contains refund window? y/n"). Reference-
 based only when exactly one correct answer exists.
 
-**C09** `[1d | 2026-07-05 | 0]`
+**C09** `[1d | 2026-07-05 | 0]` (Phase 2 — evals)
 Q: Why must an LLM judge be (a) not weaker than the generator and (b) ideally a different
 family?
 A: (a) A weaker judge approves what it can't understand — eval reads healthy while quality
 drops. (b) Same-family judges have self-preference bias toward sibling outputs.
 
-**C10** `[1d | 2026-07-05 | 0]`
+**C10** `[1d | 2026-07-05 | 0]` (Phase 2 — observability)
 Q: Agent makes 6 auto-instrumented calls; dashboard shows 6 separate trace_ids. Missing
 piece + mechanism?
 A: A root span around the agent run (`start_as_current_span("agent_run")`). OTel tracks
 the current span in context; auto-instrumented spans attach as children of whatever is
 active, inheriting its trace_id. No active span → every call starts its own trace.
 
-**C11** `[3d | 2026-07-07 | 1]`
-Q: `def add(item, box=[])` — why does the list persist across calls?
-A: Default args evaluate ONCE at def time; all calls share that one list. Fix: `box=None`,
-create inside.
-
-**C12** `[3d | 2026-07-07 | 1]`
-Q: `b = a; b += [3]` — why does `a` change? What if it were `b = b + [3]`?
-A: `b = a` copies the reference (aliasing); `+=` on a list mutates in place (`__iadd__`).
-`b = b + [3]` builds a NEW list and rebinds b — a unchanged.
-
-**C13** `[3d | 2026-07-07 | 1]`
-Q: `g = gen(); print("created")` — has any of the generator body run?
-A: No — zero lines, not even the first print. Body runs lazily on first next(), pausing
-at each yield.
-
-**C14** `[3d | 2026-07-07 | 1]`
+**C14** `[3d | 2026-07-07 | 1]` (Week 3/4 — concurrency + FastAPI)
 Q: 2s CPU-bound call inside `async def` endpoint — what breaks, fix?
 A: Freezes the single-threaded event loop — ALL concurrent requests stall. Fix:
 `await loop.run_in_executor(process_pool, fn, arg)` — processes because GIL blocks
 CPU parallelism in threads.
 
-**C15** `[3d | 2026-07-07 | 1]`
+**C15** `[3d | 2026-07-07 | 1]` (Phase 2 — observability)
 Q: OTel LLM span — why token counts in attributes but prompt text in events?
 A: Attributes are small indexed key-values you FILTER by across traces; oversized values
 get truncated/dropped. Events are timestamped payloads you READ on one trace.
 
-**C16** `[3d | 2026-07-07 | 1]`
+**C16** `[3d | 2026-07-07 | 1]` (Week 6 — Redis)
 Q: Redis lookup taking 12ms instead of ~0.5ms — top 3 causes?
 A: (1) No connection pooling — TCP handshake per call. (2) Slow O(n) command (KEYS *,
 big SMEMBERS) blocking the single-threaded event loop. (3) Cross-region Redis (~100ms RTT).
 
 ---
 
-## Passed cold today (2026-07-08) — interval advanced to 3d
+## Passed cold 2026-07-09 — second consecutive pass, advanced to 7d (still need one ELI5 pass to graduate)
+
+**C11** `[7d | 2026-07-16 | 2]`
+Q: `def add(item, box=[])` — why does the list persist across calls?
+A: Default args evaluate ONCE at def time; all calls share that one list. Fix: `box=None`,
+create inside.
+
+**C12** `[7d | 2026-07-16 | 2]`
+Q: `b = a; b += [3]` — why does `a` change? What if it were `b = b + [3]`?
+A: `b = a` copies the reference (aliasing); `+=` on a list mutates in place (`__iadd__`).
+`b = b + [3]` builds a NEW list and rebinds b — a unchanged.
+
+**C13** `[7d | 2026-07-16 | 2]`
+Q: `g = gen(); print("created")` — has any of the generator body run?
+A: No — zero lines, not even the first print. Body runs lazily on first next(), pausing
+at each yield.
+
+---
+
+## Passed cold 2026-07-09 — first pass, advanced to 3d
 
 **C01** `[3d | 2026-07-11 | 1]`
 Q: `funcs = [lambda: i for i in range(3)]` — what does calling each print, why, fix?
@@ -101,118 +99,140 @@ A: UnboundLocalError. Assignment anywhere in a function makes the name local at 
 time, shadowing the closure variable. `nonlocal count` binds to enclosing scope. Pure
 reads don't need it — only rebinding does.
 
----
+**C04** `[3d | 2026-07-12 | 1]`
+Q: Decorated function's `__name__` prints what, why, fix?
+A: `wrapper` — the name IS the wrapper after decoration; metadata (name, docstring) is
+wrapper's. Fix: `@functools.wraps(fn)` on the wrapper (note: "wraps" WITH an s). Matters
+for tracebacks, FastAPI route names, any introspection.
 
-## FAILED again today (2026-07-08) — 2ND CONSECUTIVE MISS, flagged as a real weak spot
+**C07** `[3d | 2026-07-12 | 1]`
+Q: `g = gen()` yielding 1, 2. `print(sum(g)); print(sum(g))` — output?
+A: 3 then 0. Generators are single-use; once exhausted they're silently empty (no error).
+Classic silent bug: two consumers of one generator — second gets nothing.
 
-**C02** `[1d | 2026-07-09 | 0]`
+**C02** `[3d | 2026-07-12 | 1]` — ⚠️ history: missed 2026-07-04 AND 2026-07-08, PASSED CLEAN
+2026-07-09 on the third attempt. Weak spot genuinely closed, not just memorized — verify
+this stays solid on the 07-12 retry before fully trusting it.
 Q: Decorator prints A in deco body, B in wrapper, C in fn. Two calls after `@deco` — output?
 A: A B C B C. Decoration runs once at def time (A). The name permanently points to
 wrapper — EVERY call runs wrapper (B) then the original fn (C).
-⚠️ Missed 2026-07-04 AND 2026-07-08. Re-taught in full both times. If missed a 3rd time,
-stop and rebuild the explanation from the def-time/call-time model line by line with Rudra
-writing it, not reading it.
 
----
-
-## New cards from today's deep session (2026-07-08) — first due 2026-07-09
-
-**N17** `[1d | 2026-07-09 | 0]`
-Q: `y = x` then later `x = 10` — does `y` change? Explain with the box/sticky-note model.
-A: No. `x = 10` doesn't touch the box `x` was pointing at — it moves `x`'s sticky note to
-a brand-new box containing `10`. `y`'s sticky note never moved, still on the old box.
-
-**N18** `[1d | 2026-07-09 | 0]`
-Q: `x = [1,2]; y = x; x.append(3); print(y)` vs `a = "hi"; b = a; a = a + " there"; print(b)`
-— outputs, and the one-line rule?
+**N18** `[3d | 2026-07-12 | 1]`
+Q: `x=[1,2]; y=x; x.append(3); print(y)` vs `a="hi"; b=a; a=a+" there"; print(b)` — outputs
++ the rule?
 A: `[1,2,3]` (mutable — append reaches into the SAME box) vs `"hi"` (immutable — `+` always
-builds a new box). Rule: mutation changes the existing box; rebinding moves to a new one.
+builds a new box). Rule: `.append()` mutates the existing box; `a + "..."` always rebinds
+to a new one.
 
-**N19** `[1d | 2026-07-09 | 0]`
-Q: State the LEGB lookup order and what `global` does differently from `nonlocal`.
-A: Local → Enclosing → Global → Built-in, first match wins. `nonlocal` targets the nearest
-Enclosing notepad; `global` targets the Global (module-level) notepad from inside any
-function, same mechanism, different target layer.
-
-**N20** `[1d | 2026-07-09 | 0]`
+**N20** `[3d | 2026-07-12 | 1]`
 Q: Why is `x is None` preferred over `x == None`, and why can `a is b` for `a=5,b=5` be
 True but misleading?
 A: There's exactly one `None` object ever — `is` is correct and faster. Small ints/short
 strings are cached by CPython (implementation detail) so `is` can accidentally "work" on
 them, then silently break on larger values — always use `==` for value comparison.
 
-**N21** `[1d | 2026-07-09 | 0]`
+**N21** `[3d | 2026-07-12 | 1]`
 Q: What does a `with` block guarantee that manual `open()`/`close()` doesn't?
 A: `__exit__` runs no matter how the block ends — clean finish OR exception. Manual
 `f.close()` after `f.read()` never runs if `read()` crashes — resource leaks.
 
-**N22** `[1d | 2026-07-09 | 0]`
-Q: `__exit__` returns `True` vs returns nothing (`None`) when an exception occurred inside
-the `with` block — what's the difference, and does code AFTER the `raise` line (still
-inside the block) ever run either way?
-A: `True` suppresses the exception (with-statement exits normally); `None`/`False` lets it
-keep propagating outward. Either way, code after `raise` inside the block NEVER runs —
-`raise` jumps out immediately and permanently, suppression is decided only at the
-with-block boundary, it does not rewind execution.
+**N22** `[3d | 2026-07-12 | 1]`
+Q: `__exit__` returns `True` vs `None` when an exception occurred — difference? Does code
+after `raise` (still inside the block) ever run either way?
+A: `True` suppresses the exception; `None`/`False` lets it propagate. Either way, code
+after `raise` inside the block NEVER runs — `raise` jumps out immediately and permanently;
+suppression is decided only at the with-block boundary, it doesn't rewind execution.
 
-**N23** `[1d | 2026-07-09 | 0]`
-Q: In a `@contextmanager` generator, why must the `yield` be wrapped in `try/finally` to
-guarantee cleanup on exception, and is a crash without that finally "silent"?
-A: An exception in the with-block gets thrown INTO the generator at the yield point. No
-try/finally = nothing catches it there = cleanup code after yield never runs. The crash
-itself is LOUD (full traceback) — only the cleanup silently gets skipped, which is the
-actually dangerous part (e.g. a leaked DB connection riding along with a loud crash).
-
-**N24** `[1d | 2026-07-09 | 0]`
+**N24** `[3d | 2026-07-12 | 1]`
 Q: `with A(), B(): body` — order of enter/exit calls?
-A: enter A → enter B → body runs once (not incrementally) → exit B → exit A. Enters in
-written order, exits in reverse (LIFO) — same idea as nested nesting, innermost closes first.
+A: enter A → enter B → body runs once → exit B → exit A. Enters in written order, exits
+in reverse (LIFO) — innermost closes first.
 
-**N25** `[1d | 2026-07-09 | 0]`
-Q: `except Exception as e: print(...); raise` (bare raise, no argument) — does this
-suppress the exception?
-A: No — bare `raise` re-throws the SAME exception. This is "log/rollback on the way out,
-still crash" — common production pattern (e.g. transaction rollback + re-raise), not
-exception handling that hides the error.
+**N25** `[3d | 2026-07-12 | 1]` (card rewritten 07-09 with concrete example — original
+phrasing was too abstract, Rudra correctly flagged "didn't understand the q")
+Q: `try: risky() / except Exception as e: print(...); raise` — does the bare `raise`
+suppress the exception? Does code after the whole try/except block run?
+A: No — bare `raise` RE-THROWS the same exception, doesn't suppress it. This is the
+"log/rollback on the way out, still crash" pattern. Nothing after the block runs unless
+something further up catches it.
 
-**N26** `[1d | 2026-07-09 | 0]`
-Q: `t = timer()` (a `@contextmanager` object) used in two separate `with t:` blocks —
-does the second one work?
-A: No — crashes with `RuntimeError: generator didn't yield`. `@contextmanager` is built on
-ONE generator per call; the first `with` runs it to completion (exhausted, like any
-generator). Reusing the same instance tries to pull from an already-finished generator.
-Fix: call `timer()` fresh each time, don't reuse the same instance.
-
-**N27** `[1d | 2026-07-09 | 0]`
-Q: `@multiply_by(2)` then `@multiply_by(3)` stacked above one function — which applies
-first?
-A: Closest to the function applies first (bottom-up) — `multiply_by(3)` wraps the
-original function, then `multiply_by(2)` wraps THAT. Common interview trap: people assume
+**N27** `[3d | 2026-07-12 | 1]`
+Q: `@multiply_by(2)` then `@multiply_by(3)` stacked — which applies to the function first?
+A: Closest to the function applies first (bottom-up). Common trap: people assume
 top-to-bottom reading order = application order; it's the reverse.
 
-**N28** `[1d | 2026-07-09 | 0]`
-Q: `@retry(times=3)` above a function — what actually gets called first, and when does the
-real "decorator" get created?
-A: `retry(times=3)` is evaluated FIRST as a plain function call — it returns the real
-decorator (a closure remembering `times=3`). THAT returned function is then called with
-the target function, same as any plain decorator. Two rounds of closures chain together.
+**N28** `[3d | 2026-07-12 | 1]`
+Q: `@retry(times=3)` above a function — what gets called first, before the target function
+is touched at all?
+A: `retry(times=3)` fires FIRST as a plain function call, returns the real decorator (a
+closure remembering `times=3`). THAT returned function is then called with the target
+function — same as any plain decorator, one extra round of closures.
 
-**N29** `[1d | 2026-07-09 | 0]`
-Q: A closure does `store[n] = fn(n)` on an enclosing-scope dict — no `nonlocal` needed.
-Why, precisely (not just "mutable")?
+**N29** `[3d | 2026-07-12 | 1]`
+Q: A closure does `store[n] = fn(n)` on an enclosing dict — no `nonlocal` needed. Why,
+precisely (not just "mutable")?
 A: The local-detection rule only fires on bare NAME reassignment (`store = ...`).
-`store[n] = ...` never rebinds the name `store` — it reads store then calls
-`store.__setitem__`. If it were `store = {...}` instead, THAT would need `nonlocal`
-regardless of dict being mutable — the rule is about the assignment pattern, not the type.
+`store[n] = ...` never rebinds the name — it reads `store` then calls
+`store.__setitem__`. No reassignment of the name = no local created = nothing for
+`nonlocal` to fix.
 
-**N30** `[1d | 2026-07-09 | 0]`
-Q: `x = yield 1` then later `g.send(10)` — what does send() actually do that next() doesn't?
-A: Both resume the paused generator, but `send(value)` also supplies the RESULT of the
-paused `yield` expression — completing `x = 10`. Plain `next()` is equivalent to
-`send(None)`. The assignment in `x = yield 1` happens in two moments: yield fires and
-pauses (nothing assigned yet), THEN whatever resumes it delivers the value that `x` becomes.
+---
+
+## MISSED 2026-07-09 — needed real correction, stay at 1d, retry tomorrow
+
+**N17** `[1d | 2026-07-10 | 0]`
+Q: `y = x` then later `x = 10` — does `y` change? How many boxes exist right after
+`y = x` runs (before `x = 10`)?
+A: `y` unaffected. Exactly ONE box exists after `y = x` — it does NOT create a new box
+copying x's value; it just adds a second sticky note onto the SAME box `x` already
+points to. (First-attempt miss: said "creates a box... puts the value of x in it" —
+that's describing a copy, which is wrong. Corrected to "1 box, 2 notes.")
+
+**N19** `[1d | 2026-07-10 | 0]`
+Q: State the LEGB order. What does `nonlocal` target vs what does `global` target —
+precisely, no overlap?
+A: Local → Enclosing → Global → Built-in. `nonlocal` targets ONLY the nearest Enclosing
+scope — if not found there, SyntaxError, it never falls through to Global. `global`
+targets ONLY the module-level Global scope, unrelated to how many enclosing functions
+exist. Non-overlapping, not interchangeable. (First-attempt miss: said nonlocal could mean
+"either enclosing or global" — false, it's enclosing-only.)
+
+**N23** `[1d | 2026-07-10 | 0]` — ⚠️ biggest miss of the session, needed full re-teach
+Q: In `@contextmanager`, why must `yield` be wrapped in `try/finally` for cleanup to run
+on exception? Is the resulting crash "silent"?
+A: The exception from the with-block gets thrown INTO the generator AT the yield point.
+No try/finally = nothing catches it there = cleanup after yield never runs. The CRASH
+itself is loud (full traceback) — only the cleanup silently gets skipped, which is the
+actually dangerous part (e.g. a DB connection leak: original crash is loud and gets
+logged/forgotten, connection never released, pool exhausts weeks later with a totally
+different, seemingly-unrelated error). (First attempt confused this with the unrelated
+`@retry` decorator example and answer had no real mechanism; second attempt on the
+DB-connection follow-up incorrectly brought in ACID instead of identifying the resource
+leak. Needs a clean retry before trusting this is solid.)
+
+**N26** `[1d | 2026-07-10 | 0]`
+Q: `t = timer()` (a `@contextmanager` object), reused in two separate `with t:` blocks —
+does the second one work? What specifically is exhausted, and is the error compile-time
+or runtime?
+A: No — crashes with `RuntimeError: generator didn't yield`. It's the GENERATOR living
+inside `t` that's exhausted (not `t` itself, which is still a valid object) — same
+single-use mechanism as `sum(g)` returning 0 on a second call. This is a RUNTIME error —
+`__enter__` calls `next()` on the exhausted generator live, during execution; there is no
+separate compile-time check for this. (Two rounds of imprecision before landing: "null"
+instead of "exhausted," then "thrown by the compiler" instead of "runtime.")
+
+**N30** `[1d | 2026-07-10 | 0]`
+Q: `x = yield 1` then `g.send(10)` (generator already paused at `yield 1` from a prior
+`next(g)`) — what does that ONE `send(10)` call do, start to finish?
+A: `send(10)` resumes the generator, completes `x = 10`, and then KEEPS RUNNING without
+pausing again until it hits the next `yield` — so the `print(f"received: {x}")` line
+fires immediately as a side effect WITHIN that same call, and `send(10)` itself RETURNS
+`20` (from `yield x*2`). No further calls needed to reach the print or the 20 — both
+happen inside that one `send()`. (Miss: treated print and reaching the second yield as
+requiring separate additional calls, when they all happen within the single `send(10)`.)
 
 ---
 
 ## Graduated
-(none yet)
+(none yet — C11/C12/C13 are two passes deep but neither pass was ELI5-style; need one
+ELI5-format cold pass each to actually graduate)
