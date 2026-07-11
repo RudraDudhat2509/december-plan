@@ -16,19 +16,6 @@ Phase 2, Redis = Week 6) stay parked below, untouched, until we actually get the
 
 ## PARKED — future-phase content, not yet re-taught, do not test until that week arrives
 
-**C05** `[1d | 2026-07-05 | 0]` (Week 3 — concurrency)
-Q: Two 2s fetches: (a) `await a(); await b()` vs (b) `create_task` both then await both.
-Times?
-A: (a) 4s — bare await starts AND finishes one coroutine before the next exists.
-(b) 2s — create_task starts work immediately; awaits just collect. THE RULE: concurrency
-is decided by WHEN WORK STARTS, not by the word await. gather/create_task start early.
-
-**C06** `[1d | 2026-07-05 | 0]` (Week 3 — concurrency)
-Q: 10 Python threads downloading 10 files (~3s each) — faster than serial despite GIL? Why?
-A: Yes, ~3s total vs 30s. Threads release the GIL during blocking I/O. GIL blocks parallel
-COMPUTING, not parallel WAITING. Threads: useless for CPU, fine for I/O; async scales
-further for thousands of connections.
-
 **C08** `[1d | 2026-07-05 | 0]` (Phase 2 — evals)
 Q: Judge scores outputs by similarity to one golden `expected` answer; a better differently-
 worded answer scores 0.4. Flaw? Fix?
@@ -48,12 +35,6 @@ piece + mechanism?
 A: A root span around the agent run (`start_as_current_span("agent_run")`). OTel tracks
 the current span in context; auto-instrumented spans attach as children of whatever is
 active, inheriting its trace_id. No active span → every call starts its own trace.
-
-**C14** `[3d | 2026-07-07 | 1]` (Week 3/4 — concurrency + FastAPI)
-Q: 2s CPU-bound call inside `async def` endpoint — what breaks, fix?
-A: Freezes the single-threaded event loop — ALL concurrent requests stall. Fix:
-`await loop.run_in_executor(process_pool, fn, arg)` — processes because GIL blocks
-CPU parallelism in threads.
 
 **C15** `[3d | 2026-07-07 | 1]` (Phase 2 — observability)
 Q: OTel LLM span — why token counts in attributes but prompt text in events?
@@ -240,6 +221,81 @@ Q: `g = (x for x in range(3)); print(list(g)); print(list(g))` — both outputs,
 A: `[0, 1, 2]` then `[]`. Generator expressions ARE generators (just `()` syntax instead
 of a full `def`/`yield` function) — same single-use exhaustion as C07/N26. First `list(g)`
 consumes it fully; second call has nothing left.
+
+---
+
+## Week 3 (concurrency) — taught + tested 2026-07-09. C05/C06/C14 un-parked, passed via
+## repeated correct application during the quiz — advanced to 3d.
+
+**C05** `[3d | 2026-07-12 | 1]`
+Q: Two 2s fetches: (a) `await a(); await b()` vs (b) `create_task` both then await both.
+Times?
+A: (a) 4s — bare await starts AND finishes one coroutine before the next exists.
+(b) 2s — create_task starts work immediately; awaits just collect. Concurrency exists
+only between things STARTED before either is awaited — not just "using async."
+
+**C06** `[3d | 2026-07-12 | 1]`
+Q: 10 Python threads downloading 10 files (~3s each) — faster than serial despite GIL? Why?
+A: Yes, ~3s total vs 30s. Threads release the GIL specifically during blocking I/O waits.
+GIL blocks parallel COMPUTING, never parallel WAITING.
+
+**C14** `[3d | 2026-07-12 | 1]`
+Q: 2s CPU-bound call inside `async def` endpoint — what breaks, fix?
+A: Freezes the single-threaded event loop — ALL concurrent requests stall, including
+unrelated ones, because the loop only switches tasks at `await` points (cooperative, not
+forced) and a blocking call never offers one. Fix: `run_in_executor` with a
+ProcessPoolExecutor.
+
+**W32** `[1d | 2026-07-10 | 0]`
+Q: Why can't a busy CPU with multiple threads just get "forced" to switch to another
+runnable thread the way the OS does with real threads?
+A: `asyncio`'s event loop uses COOPERATIVE scheduling, not preemptive — it only switches
+at `await` points, voluntarily offered by the running code. It never forcibly interrupts
+a coroutine mid-execution. No `await` anywhere = no opportunity to switch, no matter how
+"free" the CPU technically is.
+
+**W33** `[1d | 2026-07-10 | 0]`
+Q: Offloading CPU work from an async handler: ThreadPoolExecutor vs ProcessPoolExecutor —
+what specifically does each one fix, and what does thread pool NOT fix?
+A: Both keep the EVENT LOOP itself responsive (neither blocks the loop's own thread).
+ThreadPoolExecutor does NOT give real parallelism among the offloaded CPU tasks
+themselves — they still serialize via the GIL. ProcessPoolExecutor gives both:
+loop stays responsive AND the CPU tasks genuinely run in parallel.
+
+**W34** `[1d | 2026-07-10 | 0]`
+Q: What does `asyncio.TaskGroup` guarantee that scattering bare `create_task()` calls
+with no group does not?
+A: Structured concurrency — if any task in the group raises, the others are automatically
+cancelled and the error propagates (as an ExceptionGroup) when the `async with` block
+exits. Bare untracked `create_task()` calls can fail silently with nobody watching.
+
+**W35** `[1d | 2026-07-10 | 0]`
+Q: Sending a 500MB object to a ProcessPoolExecutor for a 1ms computation — faster or
+slower than doing it directly, single-threaded? Why?
+A: Slower, often dramatically. Every argument in and result out must be pickled,
+transferred across a process boundary, and unpickled — for 500MB that cost is vastly
+larger than 1ms of real work. Multiprocessing wins only when computation is expensive
+RELATIVE to the data being shipped, not just whenever something is technically CPU-bound.
+
+**W36** `[1d | 2026-07-10 | 0]`
+Q: 1000 records, 0.5ms of pure computation each, sent individually to
+`ProcessPoolExecutor.map()` — runs slower than a plain loop. Two fixes?
+A: (1) Honest fix: skip multiprocessing entirely, the work is too cheap — plain loop
+(500ms total, zero serialization) beats it outright. (2) If the real workload were
+bigger: use `chunksize=N` to batch many records per task, paying the serialize/
+deserialize round trip far fewer times instead of once per individual record.
+
+**W37** `[1d | 2026-07-10 | 0]` — ⚠️ real, fresh catch, application not just recognition
+Q: You're DESIGNING a fix (not being quizzed) for a pure-computation, zero-I/O workload,
+and your instinct is "use threads/workers for concurrency." Before writing that code —
+what single detail must you check first, and why does it override the instinct?
+A: Check whether there's ANY I/O in the workload at all. Zero I/O = GIL is never
+released = threads give no real speedup regardless of how they're structured (locks,
+worker pools, however dressed up) — same mechanism as C06, just applied while
+*generating* a solution instead of *recognizing* the fact under direct quiz. Rudra
+correctly explained the GIL mechanism when tested on it directly earlier the same
+session, then proposed threads anyway when designing his own fix minutes later —
+recognition and application are different skills, this card tests the second one.
 
 ---
 

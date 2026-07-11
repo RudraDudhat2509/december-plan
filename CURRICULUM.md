@@ -172,8 +172,29 @@ runtime error"), N30 (timing confusion on what one `send()` call actually does).
 retry tomorrow (2026-07-10). Closed out Week 2's last item — generator expressions
 (`(x for x in range(n))`) — clean pass first try, correctly connected to the existing
 single-use-generator lesson (N31). **Week 1 AND Week 2 content are now both fully
-taught and tested**, ahead of the original 5-week Phase 1 schedule. Next: Week 3
-(concurrency from first principles) or continue deepening Week 1/2 — Rudra's call.
+taught and tested**, ahead of the original 5-week Phase 1 schedule.
+
+**Same session, continued — Week 3 (concurrency) taught + tested in full:** CPU-bound vs
+I/O-bound distinction, GIL mechanics (releases on I/O, never on compute), event loop
+cooperative scheduling (switches only at `await`, never forced), `run_in_executor`
+(thread pool keeps the loop responsive but doesn't parallelize CPU work; process pool
+does both), multiprocessing tradeoffs (pickling cost, `chunksize` batching). Un-parked
+and passed C05/C06/C14 through repeated correct application during the quiz. Added 6 new
+cards (W32–W37) — see `RETENTION_DECK.md`.
+
+**Real catch worth flagging directly: `W37`.** Rudra correctly explained the GIL
+mechanism when tested on it directly (`compute_hash()` question), then — minutes later,
+designing his own fix for an unrelated pure-computation workload — proposed threads with
+locks anyway, the exact thing he'd just correctly ruled out. Caught and corrected in the
+moment. This is a recognition-vs-application gap, not a knowledge gap: he can state the
+rule cold, but it isn't yet automatic when he's the one generating a design instead of
+being asked to recall a fact. Worth watching for this same pattern in other topics —
+retention cards test recall, but design/application under his own initiative is the
+actual bar for FDE-style interviews, and needs separate verification.
+
+**Week 1, 2, and 3 are now all taught and tested**, three weeks ahead of the original
+5-week Phase 1 schedule (was: Wk1–5, now: Wk1–3 content done). Next: Week 4 (testing +
+professional debugging) or Week 5 (SQL + Docker + start the Attribution Engine build).
 
 ### PHASE 2 — Evals + Observability Core (Wk 6–11)
 
