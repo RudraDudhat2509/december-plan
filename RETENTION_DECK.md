@@ -309,6 +309,89 @@ recognition and application are different skills, this card tests the second one
 
 ---
 
+## Week 4 (testing + debugging) — taught 2026-07-10, not yet quizzed. Due 2026-07-11.
+## Delivered as FITB/MCQ per the new format rule, varied wording each retry.
+
+**W38** `[1d | 2026-07-11 | 0]`
+Concept: `pytest.raises` is itself a context manager, but the success condition is
+inverted from a normal `try/except` — the test PASSES only if the code inside the
+`with` block DOES raise the specified exception; it FAILS if the block completes
+without raising. `match=` additionally checks the exception message against a regex,
+so the test confirms it failed for the right reason, not just that something broke.
+
+**W39** `[1d | 2026-07-11 | 0]`
+Concept: fixture scopes control how often expensive setup reruns. `scope="function"`
+(default) = fresh every test. `scope="module"` = built once, shared across all tests in
+one file. `scope="session"` = built once for the entire test run, across all files.
+Tradeoff: broader scope = faster (less redundant setup) but risks shared state leaking
+between tests that assume a clean slate.
+
+**W40** `[1d | 2026-07-11 | 0]`
+Concept: `conftest.py` makes fixtures automatically visible to every test file in its
+directory (and subdirectories) with zero imports — pytest auto-discovers it. Used
+specifically to share expensive/common setup (a test DB, a mock server) across many
+test files without copy-pasting the fixture into each one.
+
+**W41** `[1d | 2026-07-11 | 0]`
+Concept: `Mock()` vs `MagicMock()` — `Mock` doesn't implement Python's dunder/magic
+methods (`len()`, `in`, iteration on it raises `TypeError`). `MagicMock` does implement
+them (with sensible defaults). Use `MagicMock` specifically when the code under test
+uses a Python protocol on the mocked object, not just attribute/method access.
+
+**W42** `[1d | 2026-07-11 | 0]`
+Concept: four `side_effect` configurations, each for a different scenario — (a) a LIST:
+different return value on each successive call, in order (only way to simulate
+"fails twice then succeeds" — `return_value` can't, it's always the same one answer).
+(b) a single EXCEPTION instance: every call raises it, no return value ever — distinct
+from a list item like `{"status": 500}`, which is still a normal returned value
+representing a failure, not a raised exception. (c) a CALLABLE: return value computed
+dynamically from the actual arguments passed to that specific call.
+
+**W43** `[1d | 2026-07-11 | 0]`
+Concept: mock call verification (separate category from return_value/side_effect —
+checks HOW a mock was used, not what it did when called). `assert_called_once_with(...)`
+= called exactly once AND with these exact arguments (strictest, most common in
+practice). `assert_not_called()` = confirms zero calls ever. `call_count` = plain int,
+total calls regardless of arguments. `call_args_list` = full ordered list of every
+call's arguments, for when a mock is called multiple times with different arguments and
+the whole sequence matters, not just the most recent call.
+
+**W44** `[1d | 2026-07-11 | 0]`
+Concept: the scientific debugging method, five steps in strict order — (1) reproduce
+reliably, or you can't verify a fix worked. (2) read the traceback bottom-up — the
+actual error is the last line, everything above is the call chain that led there. (3)
+form exactly ONE falsifiable hypothesis. (4) test that one thing in isolation. (5) if
+still stuck, bisect — cut the problem space in half repeatedly. Changing multiple things
+at once means a fix "working" teaches you nothing about which change actually mattered.
+
+**W45** `[1d | 2026-07-11 | 0]`
+Concept: real bug pattern — a function with a mutable default argument
+(`def f(x, results=[])`) used as an accumulator. Every call that doesn't pass its own
+`results` shares the SAME list, across completely unrelated calls, causing one call's
+result list to silently grow with entries from a totally separate later call. Symptom:
+`len()` of an "early" result list is larger than it should be. Same root mechanism as
+`C11`, applied to a cross-contamination bug rather than a simple persistence bug.
+
+**W46** `[1d | 2026-07-11 | 0]`
+Concept: `pdb` command set — `n` (next: run this line, don't enter function calls made
+on it) vs `s` (step: run this line, DO enter any function call on it) — the only way to
+actually get inside a suspect function's internals. `c` (continue to next breakpoint).
+`p <expr>` (evaluate + print any expression using current local state). `w` (full call
+stack, how you got here). `b <line>` (set a breakpoint without editing source).
+Conditional breakpoints (`if condition: breakpoint()`) isolate one specific iteration in
+a large loop instead of stopping on every single pass.
+
+**W47** `[1d | 2026-07-11 | 0]`
+Concept: `git bisect` = binary search over commit history to find which commit
+introduced a bug. Manual: `git bisect start`, `git bisect bad` (current is broken),
+`git bisect good <ref>` (this old one was fine) — git checks out the midpoint each
+round, you test and mark good/bad, repeats until isolated. `git bisect run <script>`
+automates the test-and-mark step entirely — but requires a script whose EXIT CODE
+reliably signals the result (0 = good, non-zero = bad, same convention pytest uses) —
+git reads only the exit code, never printed output.
+
+---
+
 ## Graduated
 (none yet — C11/C12/C13 are two passes deep but neither pass was ELI5-style; need one
 ELI5-format cold pass each to actually graduate)

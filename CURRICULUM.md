@@ -81,6 +81,21 @@ enforced every week, no exceptions:
    Rule: if a question's model answer requires a mechanism that hasn't been taught as its
    own standalone explanation, teach it properly first, THEN ask. Never let "I gestured at
    it once" count as "I taught it."
+9. **Theory → dynamic hands-on practice, every topic, no exceptions** (added 2026-07-10,
+   codifying what actually worked in the Week 4 session). Deep theory alone isn't enough —
+   every topic gets followed by REAL practice: actual files on disk, actual test suites
+   written and run with real `pytest`, actual bugs planted and found with real `pdb`
+   sessions, not chat-only Q&A. Concretely, this looked like: Claude writes a function +
+   an example test suite (verified with a real `python -m pytest` run, never just written
+   and assumed correct) → Rudra writes tests for a NEW function himself, iterated live
+   against real pytest output → Claude plants a genuine bug in a realistic-sized dataset →
+   Rudra finds it with actual `pdb` commands, not by reading the file. Practice work lives
+   in `practice/<week>/`.
+   **The scope constraint (this is Rule 8 applied to practice, not just quiz questions):**
+   practice must draw ONLY from what's actually been taught, and only from material Rudra
+   has already demonstrated he knows. A practice exercise that requires a mechanism never
+   explained is the same fairness violation as a quiz question that does — teach it
+   standalone first, or don't include it in the exercise at all.
 
 ---
 
@@ -195,6 +210,64 @@ actual bar for FDE-style interviews, and needs separate verification.
 **Week 1, 2, and 3 are now all taught and tested**, three weeks ahead of the original
 5-week Phase 1 schedule (was: Wk1–5, now: Wk1–3 content done). Next: Week 4 (testing +
 professional debugging) or Week 5 (SQL + Docker + start the Attribution Engine build).
+
+**New session (2026-07-10) — retention run, methodology change, Week 4 in full.**
+
+Opened with the 11 cards due from 2026-07-09: all 5 flagged misses (N17, N19, N23, N26,
+N30) retried clean, including `N23` (the biggest miss) which needed two more rounds of
+pushing before the actual injection mechanism (`gen.throw()` at the `yield` point) was
+stated precisely. `W32` turned out to have a genuinely ambiguous question on Claude's
+end (tested threads/GIL when it meant to test the event loop specifically) — fixed and
+re-asked correctly, logged as a real card-authoring bug, not a Rudra miss. `W33` caught
+a real, meaningful misunderstanding: conflated "offload to ThreadPoolExecutor" with
+"call directly, no executor at all" — `run_in_executor`'s `await` IS a real yield point
+back to the loop, event loop stays responsive even with a thread pool; corrected.
+
+**Methodology change, mid-run:** Rudra: "i want fitb or mcq type questions in cards from
+now on and cards should be dynamic." Retention cards are now delivered as FITB/MCQ, with
+varied wording each retry — never the same static phrasing twice. See
+`RETENTION_DECK.md` header and [[feedback-retention-card-format]] in Claude's memory.
+Directly motivated by the same recognition-vs-application concern as `W37`.
+
+**Curriculum depth correction, also mid-session:** after Week 4 got covered in a
+handful of exchanges, Rudra: "your weeks curriculum is super not that great... it
+should teach me a lottt... i should learn a little deeper/more breadth/more examples."
+This is now a standing calibration for the whole plan, not a one-time fix — see
+[[feedback-curriculum-depth]]. Week 4 was then re-taught properly with real depth:
+
+- **pytest, full breadth:** `assert` as Level-1 evals (direct tie to the Hamel
+  methodology), fixtures (including `yield`-based teardown, scopes: function/module/
+  session, `conftest.py` sharing), `parametrize`, `pytest.raises` with `match`, marks
+  (`skip`/`skipif`/`xfail`), `Mock` vs `MagicMock`, `return_value` vs `side_effect`
+  (list / single exception / callable — all four variants with worked examples),
+  `pytest-asyncio` for testing coroutines, and a full mock-verification pass
+  (`assert_called_once_with`, `assert_not_called`, `call_count`, `call_args_list`) —
+  though the last one was explicitly scaled back at Rudra's request mid-lesson ("i
+  wouldnt need this level of detail") — logged as calibration, not a gap.
+- **Scientific debugging method** (5 steps, reproduce → bottom-up traceback → one
+  hypothesis → test it → bisect) taught and applied to two real bug hunts — a
+  `ZeroDivisionError` and a genuine mutable-default-argument cross-contamination bug
+  (`results=[]` shared across calls) that Rudra correctly diagnosed via the exact
+  symptom (`len(processed_1) == 2` instead of `1`).
+- **`pdb`** — real command table (`n`/`s`/`c`/`p`/`pp`/`l`/`w`/`b`/`q`), conditional
+  breakpoints, and a genuine buried-bug exercise: an 80-record trace dataset
+  (`practice/week4_testing/trace_data.json`) with one malformed span (`t54`, missing
+  `duration_ms`) that Rudra correctly localized.
+- **`git bisect`** — manual workflow and `git bisect run` with a script, including the
+  exit-code mechanism specifically (0 = good, non-zero = bad — same convention pytest
+  itself uses).
+
+**Real, hands-on artifact built this session:** `december-plan/practice/week4_testing/`
+— `payment.py` + `test_payment_example.py` (Claude's reference suite, all passing),
+`inventory.py` + `test_inventory.py` (Rudra's own tests, iterated live against real
+pytest runs — caught his own false-positive immutability test via the `copy = items`
+aliasing trap, a direct callback to Week 1), `debug_me.py` + `trace_data.json` (the
+pdb exercise). All verified by actually running pytest, not just written and assumed
+correct — every fix in this session was confirmed with a real `python -m pytest` run
+before being presented as working.
+
+**Week 1–4 are now all fully taught and tested.** Next: Week 5 (SQL + Docker + start
+the Attribution Engine build) — the last week of the original Phase 1 scope.
 
 ### PHASE 2 — Evals + Observability Core (Wk 6–11)
 
