@@ -12,6 +12,16 @@ actually re-taught in the CURRENT pass of the curriculum. Cards from weeks/phase
 yet reached in the restructured plan (concurrency = Week 3, evals/observability =
 Phase 2, Redis = Week 6) stay parked below, untouched, until we actually get there.
 
+**Delivery format rule (added 2026-07-10, Rudra's instruction):** the stored Q/A per card
+below is the CONCEPT DEFINITION — what's being tested and the correct answer — not the
+literal script to read aloud. When actually delivering a due card in a session, generate
+a fresh **FITB (fill-in-the-blank) or MCQ** variant testing the same underlying concept,
+with **varied wording/scenario each time it comes up** — never the same static phrasing
+twice in a row. Open-ended short-answer questions (the old format) are retired. Reasoning:
+static repeated phrasing risks pattern-matching on a remembered question instead of
+genuinely re-deriving the concept — directly the same recognition-vs-application concern
+flagged at `W37`. Dynamic FITB/MCQ forces fresh recall every time.
+
 ---
 
 ## PARKED — future-phase content, not yet re-taught, do not test until that week arrives
