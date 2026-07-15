@@ -152,8 +152,18 @@ Weekly structure:
 - **Wk 4 — Testing + professional debugging.** pytest, fixtures, parametrize, mocking —
   through the evals lens (assertions ARE Level-1 evals). Scientific debugging method,
   pdb, git bisect. Reps: 2 planted-bug hunts in unfamiliar code (the FDE live-debug format).
-- **Wk 5 — SQL essentials + Docker + build the pipeline.** SQL (JOINs, GROUP BY, window
-  functions — deepened later during error-analysis weeks), Docker fundamentals, then
+- **Wk 5 — SQL essentials + Docker + build the pipeline.** SQL, full week's depth, not a
+  few exchanges (corrected 2026-07-15 after being taught too shallow initially — see
+  [[feedback-curriculum-depth]]): basics first (`SELECT`/`WHERE` + comparison/logical
+  operators incl. the `= NULL` never-matches trap vs `IS NULL`, `ORDER BY`/`LIMIT`,
+  `INSERT`/`UPDATE`/`DELETE` with the preview-SELECT-before-DELETE safety habit,
+  `DISTINCT`, basic subqueries) — THEN the four JOIN types (`INNER`/`LEFT`/`RIGHT`/
+  `FULL OUTER`, the LEFT JOIN + `COUNT(*)` vs `COUNT(column)` gotcha), `GROUP BY` +
+  aggregates, and window functions (`ROW_NUMBER`/`RANK`/`DENSE_RANK`/`LAG`/`LEAD`, each
+  taught individually on the same traced example before ever combining with
+  `PARTITION BY` — see the sequencing addendum in [[feedback-curriculum-depth]]).
+  Practiced hands-on against a real SQLite db (`practice/week5_sql/agents.db`), every
+  query actually run and verified, not just written. Docker fundamentals next, then
   assemble the base system: a LangGraph pipeline with 4 distinct agent roles (Researcher
   with RAG over a small doc set → Analyst → Writer → Critic) doing a real report-writing
   task, containerized, OTel-instrumented from day one. The Phase 1 gate build.

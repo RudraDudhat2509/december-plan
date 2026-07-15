@@ -407,6 +407,62 @@ matches. `COUNT(column_name)` skips NULLs of that specific column, correctly rep
 
 ---
 
+## Week 5 continued (SQL basics + window functions) — taught 2026-07-15, not yet
+## quizzed. Due 2026-07-16. Verified hands-on against real SQLite (`agents.db`).
+
+**W51** `[1d | 2026-07-16 | 0]`
+Concept: `WHERE column = NULL` NEVER matches anything, ever — `NULL` means "unknown,"
+and "is unknown equal to unknown" is itself unknown, never true. The only correct way
+to check for NULL is `IS NULL` (or `IS NOT NULL`) — dedicated syntax, not a comparison.
+
+**W52** `[1d | 2026-07-16 | 0]`
+Concept: `AND` binds tighter than `OR` in SQL — mixing them in one `WHERE` without
+parentheses silently changes the logic. `WHERE a AND b OR c` parses as
+`(a AND b) OR c`, not `a AND (b OR c)`. Always parenthesize the `OR` group explicitly
+whenever `AND` and `OR` mix in the same clause.
+
+**W53** `[1d | 2026-07-16 | 0]`
+Concept: `UPDATE`/`DELETE` with no `WHERE` clause silently affects EVERY row in the
+table — syntactically legal, one of the most damaging real-world SQL mistakes. Safety
+habit: always run the equivalent `SELECT` with the same `WHERE` clause FIRST, confirm
+exactly which rows would be affected, only then run the real `UPDATE`/`DELETE`.
+
+**W54** `[1d | 2026-07-16 | 0]`
+Concept: `SELECT DISTINCT column` collapses a result down to unique values only —
+`SELECT agent_name` returns one row per underlying row (duplicates included);
+`SELECT DISTINCT agent_name` returns each distinct value exactly once, regardless of
+how many underlying rows share it.
+
+**W55** `[1d | 2026-07-16 | 0]`
+Concept: a subquery in parentheses inside `WHERE` runs FIRST, computing a value (or
+set of values), which the outer query then uses as if it had been typed in literally —
+e.g. `WHERE latency_ms > (SELECT AVG(latency_ms) FROM agent_runs)` filters against the
+computed average without a separate manual step.
+
+**W56** `[1d | 2026-07-16 | 0]`
+Concept: `ROW_NUMBER()`/`RANK()`/`DENSE_RANK()` all number rows via `OVER (ORDER BY ...)`
+but differ ONLY on ties. `ROW_NUMBER()` never ties — arbitrarily breaks ties, sequential
+numbers with no repeats. `RANK()` ties rows equally but leaves a GAP afterward (counts
+rows: two tied at 2nd means next is 4th). `DENSE_RANK()` ties equally with NO gap
+(counts distinct values: next is 3rd, since only 2 distinct values seen so far).
+
+**W57** `[1d | 2026-07-16 | 0]`
+Concept: window functions (`OVER (...)`) do NOT collapse rows like `GROUP BY` does —
+every original row survives, gaining an extra calculated column instead. `PARTITION BY`
+inside `OVER` is the window-function version of `GROUP BY`, but it partitions the
+CALCULATION only — e.g. `RANK() OVER (PARTITION BY agent_name ORDER BY latency DESC)`
+restarts the ranking from 1 separately for each agent, rather than one ranking across
+the whole table.
+
+**W58** `[1d | 2026-07-16 | 0]`
+Concept: `LAG(col) OVER (ORDER BY ...)` grabs that column's value from ONE ROW BACK
+(previous row, per the given order) and attaches it to the current row — first row
+gets NULL (nothing before it). `LEAD(col)` is the mirror — grabs the NEXT row's value,
+last row gets NULL. Both let you compare a row to its neighbor directly in one
+`SELECT`, without a self-join.
+
+---
+
 ## Graduated
 (none yet — C11/C12/C13 are two passes deep but neither pass was ELI5-style; need one
 ELI5-format cold pass each to actually graduate)
