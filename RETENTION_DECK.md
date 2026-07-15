@@ -22,6 +22,16 @@ static repeated phrasing risks pattern-matching on a remembered question instead
 genuinely re-deriving the concept — directly the same recognition-vs-application concern
 flagged at `W37`. Dynamic FITB/MCQ forces fresh recall every time.
 
+**Recency scoping rule (added 2026-07-15, Rudra's instruction):** day-to-day quiz
+sessions surface cards from only the MOST RECENTLY taught session/week, not the full
+cumulative backlog. Older cards remain in the deck as a historical record and stay
+technically "due" per their own schedule, but aren't actively surfaced unless Rudra
+explicitly asks for a full backlog run. **Known tradeoff, flagged and accepted:** this
+breaks the core premise of spaced repetition (resurfacing old material before it fades)
+— Week 1–3 content will not get reinforced under this rule and should be expected to
+decay. If retention on older weeks turns out to matter later (e.g. before Phase 1 gate
+or a mock interview), a full backlog run should be explicitly requested.
+
 ---
 
 ## PARKED — future-phase content, not yet re-taught, do not test until that week arrives
@@ -309,86 +319,91 @@ recognition and application are different skills, this card tests the second one
 
 ---
 
-## Week 4 (testing + debugging) — taught 2026-07-10, not yet quizzed. Due 2026-07-11.
-## Delivered as FITB/MCQ per the new format rule, varied wording each retry.
+## Week 4 (testing + debugging) — quizzed 2026-07-15 in FITB/MCQ format. Results below.
 
-**W38** `[1d | 2026-07-11 | 0]`
+**W38** `[3d | 2026-07-18 | 1]` — passed clean.
 Concept: `pytest.raises` is itself a context manager, but the success condition is
 inverted from a normal `try/except` — the test PASSES only if the code inside the
 `with` block DOES raise the specified exception; it FAILS if the block completes
 without raising. `match=` additionally checks the exception message against a regex,
 so the test confirms it failed for the right reason, not just that something broke.
 
-**W39** `[1d | 2026-07-11 | 0]`
+**W39** `[3d | 2026-07-18 | 1]` — passed after one correction (confused `conftest.py`
+with the `scope="session"` value on the third blank — two different concepts: where
+fixtures live vs how often they rerun).
 Concept: fixture scopes control how often expensive setup reruns. `scope="function"`
 (default) = fresh every test. `scope="module"` = built once, shared across all tests in
 one file. `scope="session"` = built once for the entire test run, across all files.
-Tradeoff: broader scope = faster (less redundant setup) but risks shared state leaking
-between tests that assume a clean slate.
 
-**W40** `[1d | 2026-07-11 | 0]`
+**W40** `[3d | 2026-07-18 | 1]` — passed clean.
 Concept: `conftest.py` makes fixtures automatically visible to every test file in its
-directory (and subdirectories) with zero imports — pytest auto-discovers it. Used
-specifically to share expensive/common setup (a test DB, a mock server) across many
-test files without copy-pasting the fixture into each one.
+directory (and subdirectories) with zero imports — pytest auto-discovers it.
 
-**W41** `[1d | 2026-07-11 | 0]`
-Concept: `Mock()` vs `MagicMock()` — `Mock` doesn't implement Python's dunder/magic
-methods (`len()`, `in`, iteration on it raises `TypeError`). `MagicMock` does implement
-them (with sensible defaults). Use `MagicMock` specifically when the code under test
-uses a Python protocol on the mocked object, not just attribute/method access.
+**W41** `[1d | 2026-07-16 | 0]` — ⚠️ real miss, two corrections needed (skipped
+`TypeError` entirely, then answered "attribute/method access" instead of "protocol"
+for what MagicMock specifically enables). Retry.
+Concept: `Mock()` doesn't implement Python's dunder/magic methods — `len()` on it
+raises `TypeError`. `MagicMock()` does implement them with sensible defaults. Use
+`MagicMock` when the code under test invokes a Python PROTOCOL (`len()`, `in`, iteration
+— special syntax that secretly calls dunder methods) on the mocked object — plain
+attribute/method access already works fine on either.
 
-**W42** `[1d | 2026-07-11 | 0]`
-Concept: four `side_effect` configurations, each for a different scenario — (a) a LIST:
-different return value on each successive call, in order (only way to simulate
-"fails twice then succeeds" — `return_value` can't, it's always the same one answer).
-(b) a single EXCEPTION instance: every call raises it, no return value ever — distinct
-from a list item like `{"status": 500}`, which is still a normal returned value
-representing a failure, not a raised exception. (c) a CALLABLE: return value computed
-dynamically from the actual arguments passed to that specific call.
+**W42** `[3d | 2026-07-18 | 1]` — passed clean.
+Concept: four `side_effect` configurations — LIST (different return value per
+successive call, only way to simulate "fails twice then succeeds"), single EXCEPTION
+instance (every call raises, no return value), CALLABLE (return value computed from
+actual call arguments).
 
-**W43** `[1d | 2026-07-11 | 0]`
-Concept: mock call verification (separate category from return_value/side_effect —
-checks HOW a mock was used, not what it did when called). `assert_called_once_with(...)`
-= called exactly once AND with these exact arguments (strictest, most common in
-practice). `assert_not_called()` = confirms zero calls ever. `call_count` = plain int,
-total calls regardless of arguments. `call_args_list` = full ordered list of every
-call's arguments, for when a mock is called multiple times with different arguments and
-the whole sequence matters, not just the most recent call.
+**W43** `[1d | 2026-07-16 | 0]` — ⚠️ real miss, wrong/incomplete on all three blanks
+(said `assert_called_once` missing the `_with`, "assert_never_called" instead of
+`assert_not_called`, left `call_count` unanswered). Retry.
+Concept: mock call verification — `assert_called_once_with(...)` = called exactly once
+AND with these exact arguments (the `_with` is what makes it check arguments, not just
+count). `assert_not_called()` = confirms zero calls ever (exact method name, not
+"never"). `call_count` = plain int attribute, no parens, total calls regardless of args.
 
-**W44** `[1d | 2026-07-11 | 0]`
-Concept: the scientific debugging method, five steps in strict order — (1) reproduce
-reliably, or you can't verify a fix worked. (2) read the traceback bottom-up — the
-actual error is the last line, everything above is the call chain that led there. (3)
-form exactly ONE falsifiable hypothesis. (4) test that one thing in isolation. (5) if
-still stuck, bisect — cut the problem space in half repeatedly. Changing multiple things
-at once means a fix "working" teaches you nothing about which change actually mattered.
+**W44** `[3d | 2026-07-18 | 1]` — passed clean.
+Concept: scientific debugging method, five steps in order — reproduce reliably → read
+traceback bottom-up → form ONE hypothesis → test that one thing → bisect if still stuck.
 
-**W45** `[1d | 2026-07-11 | 0]`
-Concept: real bug pattern — a function with a mutable default argument
-(`def f(x, results=[])`) used as an accumulator. Every call that doesn't pass its own
-`results` shares the SAME list, across completely unrelated calls, causing one call's
-result list to silently grow with entries from a totally separate later call. Symptom:
-`len()` of an "early" result list is larger than it should be. Same root mechanism as
-`C11`, applied to a cross-contamination bug rather than a simple persistence bug.
+**W45** `[3d | 2026-07-18 | 1]` — passed after one correction (had the leak direction
+backwards — said the second call's results leaked into the first call's, when it's the
+reverse: first call's entries persist into the second call's list, since call 1 runs
+first and populates the shared default before call 2 ever touches it).
+Concept: `def f(x, results=[])` — mutable default evaluated once, shared across every
+call that doesn't pass its own `results`. Call 1's entries are already in the shared
+list before call 2 runs, so call 2's result list silently contains call 1's leftovers.
 
-**W46** `[1d | 2026-07-11 | 0]`
-Concept: `pdb` command set — `n` (next: run this line, don't enter function calls made
-on it) vs `s` (step: run this line, DO enter any function call on it) — the only way to
-actually get inside a suspect function's internals. `c` (continue to next breakpoint).
-`p <expr>` (evaluate + print any expression using current local state). `w` (full call
-stack, how you got here). `b <line>` (set a breakpoint without editing source).
-Conditional breakpoints (`if condition: breakpoint()`) isolate one specific iteration in
-a large loop instead of stopping on every single pass.
+**W46** `[3d | 2026-07-18 | 1]` — passed clean.
+Concept: `pdb` — `n` (next line, black-boxes function calls) vs `s` (step, enters the
+function call) — `s` is the only way to actually get inside a suspect function.
 
-**W47** `[1d | 2026-07-11 | 0]`
-Concept: `git bisect` = binary search over commit history to find which commit
-introduced a bug. Manual: `git bisect start`, `git bisect bad` (current is broken),
-`git bisect good <ref>` (this old one was fine) — git checks out the midpoint each
-round, you test and mark good/bad, repeats until isolated. `git bisect run <script>`
-automates the test-and-mark step entirely — but requires a script whose EXIT CODE
-reliably signals the result (0 = good, non-zero = bad, same convention pytest uses) —
-git reads only the exit code, never printed output.
+**W47** `[3d | 2026-07-18 | 1]` — passed clean.
+Concept: `git bisect` = binary search over commit history — checks the midpoint commit
+repeatedly, narrowing the range. `git bisect run <script>` automates it via the
+script's EXIT CODE specifically (0 = good, non-zero = bad) — git never reads output.
+
+---
+
+## Week 5 (SQL) — quizzed 2026-07-15, all three passed clean on first try.
+
+**W48** `[3d | 2026-07-18 | 1]`
+Concept: four JOIN types. `INNER JOIN` = only rows with a match on BOTH sides —
+unmatched rows vanish. `LEFT JOIN` = every row from the left table regardless of a
+match, NULLs filling the right side where there's none. `RIGHT`/`FULL OUTER` are the
+mirror/union versions. "Show all agents including zero-failure ones" needs LEFT JOIN.
+
+**W49** `[3d | 2026-07-18 | 1]`
+Concept: `GROUP BY` collapses rows into one summary per distinct value, enabling
+aggregates (`COUNT`/`SUM`/`AVG`/etc.) per group. Every `SELECT` column must be in
+`GROUP BY` or wrapped in an aggregate — otherwise SQL can't know which row's value
+you meant.
+
+**W50** `[3d | 2026-07-18 | 1]` — the actual gotcha, most important of the three.
+Concept: `COUNT(*)` counts ALL rows regardless of content — a `LEFT JOIN` non-match
+still produces one NULL-filled row, so `COUNT(*)` wrongly reports `1` for zero real
+matches. `COUNT(column_name)` skips NULLs of that specific column, correctly reporting
+`0`. Always use `COUNT(right_table_column)`, never bare `COUNT(*)`, with LEFT JOIN.
 
 ---
 
