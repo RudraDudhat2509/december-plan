@@ -463,6 +463,46 @@ last row gets NULL. Both let you compare a row to its neighbor directly in one
 
 ---
 
+## Week 5 continued (Docker) — taught 2026-07-15/16, not yet quizzed. Due 2026-07-17.
+## First topic taught via the newly codified 5-stage pipeline (teach-rudra skill).
+
+**W59** `[1d | 2026-07-17 | 0]`
+Concept: image vs container — an IMAGE is a frozen, read-only blueprint (does nothing
+by itself). A CONTAINER is a running instance of that image. Same relationship as a
+Python class (image) and objects instantiated from it (containers) — one image, many
+independent containers, none sharing state with each other.
+
+**W60** `[1d | 2026-07-17 | 0]`
+Concept: Docker caches each Dockerfile layer. The moment ONE layer's cache invalidates
+(e.g. `COPY requirements.txt .` sees a content diff), EVERY layer downstream reruns
+too — regardless of whether that later layer's own command changed (`RUN pip install`
+reruns even though its command text never changed, because it's built on top of the
+now-invalidated layer). This is why slow/rarely-changing steps go FIRST in a
+Dockerfile and fast/frequently-changing steps (copying app code) go LAST.
+
+**W61** `[1d | 2026-07-17 | 0]`
+Concept: `docker run -v <volume_name>:<path_inside_container> <image_name>` — three
+distinct pieces in that order. Volumes persist data OUTSIDE the container's own
+filesystem, surviving container deletion/recreation — containers themselves are
+disposable by design, anything written to their own filesystem vanishes when deleted.
+
+**W62** `[1d | 2026-07-17 | 0]`
+Concept: `docker run -e KEY=value <image>` injects config/secrets at RUNTIME, not baked
+into the image at build time. Same exact image can run against dev/staging/prod just
+by changing what's passed at `docker run` time — no rebuild needed. This is why
+secrets never get hardcoded directly into a Dockerfile.
+
+**W63** `[1d | 2026-07-17 | 0]` — the actual gotcha, most important of the Docker set
+Concept: in `docker-compose.yml`, the SERVICE NAME (the key under `services:`) becomes
+the automatically resolvable HOSTNAME other containers use to reach it — e.g. a
+service named `redis:` is reached at hostname `redis`, not `localhost`. `localhost`
+is wrong here because each container is its own isolated machine — `app` and `redis`
+containers don't share a `localhost` with each other at all. `depends_on` must
+reference this exact same service name too, or the intended startup order silently
+fails to apply.
+
+---
+
 ## Graduated
 (none yet — C11/C12/C13 are two passes deep but neither pass was ELI5-style; need one
 ELI5-format cold pass each to actually graduate)

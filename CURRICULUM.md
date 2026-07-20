@@ -163,9 +163,24 @@ Weekly structure:
   taught individually on the same traced example before ever combining with
   `PARTITION BY` — see the sequencing addendum in [[feedback-curriculum-depth]]).
   Practiced hands-on against a real SQLite db (`practice/week5_sql/agents.db`), every
-  query actually run and verified, not just written. Docker fundamentals next, then
-  assemble the base system: a LangGraph pipeline with 4 distinct agent roles (Researcher
-  with RAG over a small doc set → Analyst → Writer → Critic) doing a real report-writing
+  query actually run and verified, not just written.
+
+  **Docker — taught 2026-07-15/16 via the newly codified 5-stage pipeline (see the
+  `teach-rudra` skill), first full run of the new methodology.** Theory: image vs
+  container (class/instance analogy), layer caching + the cascading invalidation rule,
+  core commands, volumes, environment variables, `docker-compose` with the
+  service-name-is-hostname rule. Worked application + sample Q&A on a real FastAPI +
+  Postgres example. Live Q&A gated MCQ/FITB. Practice done as reasoned code-review
+  ("mock it," Rudra's choice, not live-executed this round) — 4 gradual exercises
+  (Dockerfile, volume flag, env var flag, full docker-compose.yml combining app +
+  Redis), several real bugs caught and corrected (missing image name in `docker run`,
+  `port` vs `ports`, missing YAML list syntax, `depends_on` referencing a service name
+  that didn't match the actual service, env var nested under the wrong service).
+  Reference notes with diagrams written and pushed: `ai_notes/full notes/module_docker.md`.
+
+  **Week 5 (SQL + Docker) is now fully complete.** Next: assemble the base system — a
+  LangGraph pipeline with 4 distinct agent roles (Researcher with RAG over a small doc
+  set → Analyst → Writer → Critic) doing a real report-writing
   task, containerized, OTel-instrumented from day one. The Phase 1 gate build.
 
 **Phase 1 gate (Aug 9):** the pipeline runs in Docker, has tests, emits traces; Rudra
