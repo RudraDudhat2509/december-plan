@@ -183,6 +183,29 @@ Weekly structure:
   set → Analyst → Writer → Critic) doing a real report-writing
   task, containerized, OTel-instrumented from day one. The Phase 1 gate build.
 
+  **Build started 2026-07-16 — own repo, not nested in december-plan:**
+  github.com/RudraDudhat2509/attribution-engine (matches how Brok/receipts/cacheguard/
+  mimic-eval are each set up). Routing design upgraded from a naive "always loop back
+  to Writer" to metric-based attribution (Rudra's design improvement): the Critic
+  scores retrieval quality/grounding/generation quality (RAGAS-inspired: context
+  precision-recall / faithfulness / coherence) in that priority order — checking
+  retrieval first matters because a retrieval failure makes grounding look bad too as
+  a downstream symptom, not a separate root cause, same logic as bisecting to the
+  earliest broken commit rather than flagging every commit that fails afterward.
+  Researcher gets real tools (search + rerank), not a single fixed retrieve call.
+  Every Critic routing decision is logged in `routing_history` (an accumulating
+  LangGraph reducer, not overwritten each loop) — this running log IS the attribution
+  dataset the project is meant to produce.
+
+  Skeleton built and verified for real (deterministic stub nodes, no LLM calls yet —
+  proves the graph structure/looping/state accumulation before adding LLM cost and
+  non-determinism): 5/5 pytest passing, run in a dedicated venv (caught and fixed a
+  real bug along the way — was accidentally running in a completely unrelated
+  project's (`cartography`) leftover venv). Roadmap tracked in the repo's own README:
+  real LLM calls next, then real RAG, then OTel, then the ablation-based attribution
+  method as a second, deterministic approach to compare against the Critic's live
+  routing, then the synthetic benchmark with known ground-truth culprits.
+
 **Phase 1 gate (Aug 9):** the pipeline runs in Docker, has tests, emits traces; Rudra
 explains every line cold; retention deck shows ≥90% recall on all Phase 1 cards, each
 passed twice including one ELI5 pass.
